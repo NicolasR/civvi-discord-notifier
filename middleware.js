@@ -9,6 +9,13 @@ function handleError(ex, response) {
 }
 
 /*
+ * Renvoie l'url du serveur
+ */
+function getServerUrl(req) {
+    return req.protocol + '://' + req.get('host');
+}
+
+/*
  * Récupère le nom d'utilisateur
  * TODO: Gérer les cas avec des espaces et caractères spéciaux (hein Dalkilol ;) )
  */
@@ -25,23 +32,56 @@ function getUserIdFromUsername(username, mappingUsers) {
 }
 
 function processSendMessage(
+    serverUrl,
     response,
     userId,
+    userSteamId,
     channelId,
     loginToken,
     notifyPrivate,
+    steamPartyId,
     logger,
 ) {
-    // Préparation des variables pour Discord
-    logger(`Found associated userid: ${userId}`);
+    logger(`Found associated Discord User Id: ${userId}`);
+    logger(`Found associated Steam User Id: ${userSteamId}`);
     logger(`Private message enabled: ${notifyPrivate}`);
 
     // Construction du message à envoyer
     const emoji = `:smiling_imp:694108249145737247`;
     const message = `C'est à toi de jouer <@${userId}> <${emoji}> !`;
 
+    let description = message;
+    if (steamPartyId && userSteamId) {
+        const gameUrl = encodeURIComponent(
+            `steam://run/289070//?_sessionid=${userSteamId};_context=${steamPartyId}`,
+        );
+        const fullUrl = `${serverUrl}/redirect?dest=${gameUrl}`;
+        description += `\nTu peux rejoindre la partie en cliquant **[ICI](${fullUrl})**`;
+    }
+
+    const embedMessage = {
+        embed: {
+            title: '**Nouveau tour de jeu !** 😃',
+            description: description,
+            color: 16700449,
+            //timestamp: '2020-04-02T09:34:15.921Z',
+            footer: {},
+            thumbnail: {
+                url: 'https://steamcommunity-a.akamaihd.net/public/images/profile/profile_gamenotifications_turnicon.png',
+            },
+            image: {
+                url: 'https://steamcdn-a.akamaihd.net/steam/apps/289070/capsule_184x69.jpg',
+            },
+            fields: [],
+        },
+    };
+
     const handleChannelMessage = () =>
-        discordClient.sendMessageToChannel(loginToken, channelId, message);
+        discordClient
+        .sendMessageToChannel(loginToken, channelId, message)
+        .then(() =>
+            discordClient.sendMessageToChannel(loginToken, channelId, embedMessage),
+        );
 
     logger(`Sending message '${message}' to ${userId}`);
     let messengingProcess;
@@ -49,6 +89,10 @@ function processSendMessage(
         messengingProcess = () =>
             discordClient
             .sendPrivateMessage(loginToken, userId, message)
+            .then(
+                () => discordClient.sendPrivateMessage(loginToken, userId, message),
+                ex => handleError(ex, response),
+            )
             .then(handleChannelMessage, ex => handleError(ex, response));
     } else {
         messengingProcess = handleChannelMessage;
@@ -65,75 +109,96 @@ function processSendMessage(
 }
 
 module.exports = {
-    handleCivVITurnRaw: function(
-        request,
-        response,
-        mappingUsers,
-        channelId,
-        loginToken,
-        notifyPrivate,
-        logger,
-    ) {
-        logger(
-            'Received request for handling Civilization VI Turn notifications (RAW mode) !',
-        );
+    middleware: function(mappingUsersDiscord, mappingUsersSteam, logger) {
+        const _mappingUsersDiscord = mappingUsersDiscord;
+        const _mappingUsersSteam = mappingUsersSteam;
+        const _logger = logger;
 
-        // Vérification de la présence de tous les paramètres
-        if (!request.body.Value1 || !request.body.Value2 || !request.body.Value3) {
-            logger('Missing parameters, abort !');
-            response.json({ error: 'missing parameters' });
-            return;
-        }
+        return {
+            handleCivVITurnRaw: function(
+                request,
+                response,
+                channelId,
+                loginToken,
+                notifyPrivate,
+                steamPartyId,
+            ) {
+                _logger(
+                    'Received request for handling Civilization VI Turn notifications (RAW mode) !',
+                );
 
-        logger('Parameters OK !');
+                // Vérification de la présence de tous les paramètres
+                if (!request.body.Value1 ||
+                    !request.body.Value2 ||
+                    !request.body.Value3
+                ) {
+                    _logger('Missing parameters, abort !');
+                    response.json({ error: 'missing parameters' });
+                    return;
+                }
 
-        // Récupération du nom d'utilisateur
-        const userName = request.body.Value2;
-        logger(`Reading username: ${userName}`);
-        const userId = getUserIdFromUsername(userName, mappingUsers);
+                _logger('Parameters OK !');
 
-        processSendMessage(
-            response,
-            userId,
-            channelId,
-            loginToken,
-            notifyPrivate,
-            logger,
-        );
-    },
+                // Récupération du nom d'utilisateur
+                const userName = request.body.Value2;
+                _logger(`Reading username: ${userName}`);
+                const userId = getUserIdFromUsername(userName, _mappingUsersDiscord);
+                const userSteamId = getUserIdFromUsername(userName, _mappingUsersSteam);
 
-    handleCivVITurn: function(request, response, mappingUsers, logger) {
-        logger(
-            'Received request for handling Civilization VI Turn notifications !',
-        );
+                processSendMessage(
+                    getServerUrl(request),
+                    response,
+                    userId,
+                    userSteamId,
+                    channelId,
+                    loginToken,
+                    notifyPrivate,
+                    steamPartyId,
+                    logger,
+                );
+            },
 
-        // Vérification de la présence de tous les paramètres
-        if (!request.body.username ||
-            !request.body.channelId ||
-            !request.body.loginToken
-        ) {
-            logger('Missing parameters, abort !');
-            response.json({ error: 'missing parameters' });
-            return;
-        }
+            handleCivVITurn: function(request, response) {
+                _logger(
+                    'Received request for handling Civilization VI Turn notifications !',
+                );
 
-        logger('Parameters OK !');
+                // Vérification de la présence de tous les paramètres
+                if (!request.body.username ||
+                    !request.body.channelId ||
+                    !request.body.loginToken
+                ) {
+                    _logger('Missing parameters, abort !');
+                    response.json({ error: 'missing parameters' });
+                    return;
+                }
 
-        // Récupération du nom d'utilisateur
-        const userName = request.body.username;
-        logger(`Reading username: ${userName}`);
-        const userId = getUserIdFromUsername(userName, mappingUsers);
+                _logger('Parameters OK !');
 
-        const channelId = request.body.channelId;
-        const loginToken = request.body.loginToken;
-        const notifyPrivate = request.body.notifyPrivate;
-        processSendMessage(
-            response,
-            userId,
-            channelId,
-            loginToken,
-            notifyPrivate,
-            logger,
-        );
+                // Récupération du nom d'utilisateur
+                const userName = request.body.username;
+                _logger(`Reading username: ${userName}`);
+                const userId = getUserIdFromUsername(userName, _mappingUsersDiscord);
+                const userSteamId = getUserIdFromUsername(userName, _mappingUsersSteam);
+
+                const channelId = request.body.channelId;
+                const loginToken = request.body.loginToken;
+                const notifyPrivate = request.body.notifyPrivate ?
+                    request.body.notifyPrivate :
+                    false;
+                const steamPartyId = request.body.steamPartyId;
+                processSendMessage(
+                    getServerUrl(request),
+                    response,
+                    userId,
+                    userSteamId,
+                    channelId,
+                    loginToken,
+                    notifyPrivate,
+                    steamPartyId,
+                    logger,
+                );
+            },
+        };
     },
 };

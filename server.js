@@ -8,8 +8,9 @@ const config = require('./config');
 const middleware = require('./middleware');
 const app = express();
 var bodyParser = require('body-parser');
-app.use(bodyParser.json());
-const mappingUsers = require('./data/mapping-users.json');
+const mappingUsersDiscord = require('./data/mapping-users-discord.json');
+const mappingUsersSteam = require('./data/mapping-users-steam.json');
+const routes = require('./routes');
 
 /*
  * Logger
@@ -21,30 +22,23 @@ function logger(message) {
     }
 }
 
+// Initialisation du logger
+const middlewareServer = middleware.middleware(
+    mappingUsersDiscord,
+    mappingUsersSteam,
+    logger,
+);
+
+// Initialisation du parser
+app.use(bodyParser.json());
+
 // make all the files in 'public' available
 // https://expressjs.com/en/starter/static-files.html
 app.use(express.static('public'));
 
 // https://expressjs.com/en/starter/basic-routing.html
-app.get('/', (req, response) => {
-    response.sendFile(__dirname + '/views/index.html');
-});
-
-app.post('/', (req, resp) =>
-    middleware.handleCivVITurn(req, resp, mappingUsers, logger),
-);
-
-app.post('/raw', (req, resp) =>
-    middleware.handleCivVITurnRaw(
-        req,
-        resp,
-        mappingUsers,
-        config.defaultChannelId,
-        config.defaultLoginToken,
-        config.defaultNotifyPrivate,
-        logger,
-    ),
-);
+// Initialise les routes
+routes.init(app, middlewareServer, config);
 
 // listen for requests :)
 const listener = app.listen(config.port, () => {

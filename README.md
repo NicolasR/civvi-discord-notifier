@@ -6,7 +6,8 @@ Serveur permettant d'envoyer des notifications depuis une partie Cloud Civilizat
 ## Configuration
 
 Le fichier .env contient les variables de configuration utilisées.
-Le mapping entre **Nom d'utilisateur** doit être écrit dans le fichier **mapping-users.json**
+Le mapping entre **Nom d'utilisateur** et **Id Discord** doit être écrit dans le fichier **mapping-users-discord.json**
+Le mapping entre **Nom d'utilisateur** et **Id Steam** doit être écrit dans le fichier **mapping-users-steam.json**
 
 
 ## Requêtes
@@ -24,8 +25,16 @@ Format JSON attendu:
     "username": "Nom_utilisateur",
     "loginToken": "Login_token_discord",
     "channelId": "Id_Channel_discord",
+    "steamPartyId": "Id_de_la_partie",
 }
 ```
+
+| Nom du paramètre | Description | Obligatoire |
+|---|---|---|---|---|
+| username | Nom de l'utilisateur | &#x2611; |
+| loginToken | Token d'authentification du Bot | &#x2611;
+| channelId  | Id du channel Discord où sera postée la notification  | &#x2611;
+| steamPartyId | Id de la partie | &#x2612; |
 
 ### Format POST /raw
 
