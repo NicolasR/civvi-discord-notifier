@@ -29,11 +29,11 @@ Format JSON attendu:
 }
 ```
 
-| Nom du paramètre | Description | Obligatoire |
-|---|---|---|---|---|
-| username | Nom de l'utilisateur | &#x2611; |
-| loginToken | Token d'authentification du Bot | &#x2611;
-| channelId  | Id du channel Discord où sera postée la notification  | &#x2611;
+|  Nom du paramètre  |  Description  |  Obligatoire  |
+|        :---        |      :---     |     :---:     |
+| username           | Nom de l'utilisateur | &#x2611; |
+| loginToken         | Token d'authentification du Bot | &#x2611;
+| channelId          | Id du channel Discord où sera postée la notification  | &#x2611; |
 | steamPartyId | Id de la partie | &#x2612; |
 
 ### Format POST /raw
