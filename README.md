@@ -1,6 +1,10 @@
 # civvi-discord-notifier
 
-Serveur permettant d'envoyer des notifications depuis une partie Cloud Civilization VI vers Discord.
+![Exemple notification](https://user-images.githubusercontent.com/206826/78589999-658a6f00-7841-11ea-94f1-3d3571a58460.png)
+
+Serveur permettant d'envoyer des notifications depuis une partie **Cloud Civilization VI** vers **Discord**.
+
+Le serveur gère à la fois les valeurs du webhook standard de Civilization VI mais aussi un appel custom permettant de passer facilement les paramètres tels que l'id de partie ou le token d'authentification Discord.
 
 
 ## Configuration
