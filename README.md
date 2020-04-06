@@ -1,6 +1,6 @@
 # civvi-discord-notifier
 
-![Exemple notification](https://user-images.githubusercontent.com/206826/78589999-658a6f00-7841-11ea-94f1-3d3571a58460.png)
+<img src="https://user-images.githubusercontent.com/206826/78589999-658a6f00-7841-11ea-94f1-3d3571a58460.png" alt="alt text" width="400px" >
 
 Serveur permettant d'envoyer des notifications depuis une partie **Cloud Civilization VI** vers **Discord**.
 
