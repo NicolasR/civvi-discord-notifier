@@ -17,15 +17,14 @@ function getServerUrl(req) {
 
 /*
  * Récupère le nom d'utilisateur
- * TODO: Gérer les cas avec des espaces et caractères spéciaux (hein Dalkilol ;) )
+ * TODO: Vérifier le fonctionnement avec des espaces et caractères spéciaux (hein Dalkilol ;) )
  */
 function getUserIdFromUsername(username, mappingUsers) {
-    const userName = username.split(' ')[0];
-    var userId = mappingUsers[userName];
+    var userId = mappingUsers[username];
 
     // On n'a pas trouvé l'id associé, on envoie le nom d'utilisateur en brut => la personne ne sera pas mentionnée
     if (!userId) {
-        userId = userName;
+        userId = username;
     }
 
     return userId;
@@ -41,6 +40,8 @@ function processSendMessage(
     notifyPrivate,
     steamPartyId,
     logger,
+    gamename,
+    turnCount,
 ) {
     logger(`Found associated Discord User Id: ${userId}`);
     logger(`Found associated Steam User Id: ${userSteamId}`);
@@ -59,6 +60,15 @@ function processSendMessage(
         description += `\nTu peux rejoindre la partie en cliquant **[ICI](${fullUrl})**`;
     }
 
+    const fields = [];
+    if (gamename && gamename.length > 0) {
+        fields.push({ "name": "Nom de la partie", "value": gamename, "inline": true });
+    }
+
+    if (turnCount && turnCount > 0) {
+        fields.push({ "name": "Tour de jeu", "value": `${turnCount}`, "inline": true });
+    }
+
     const embedMessage = {
         embed: {
             title: '**Nouveau tour de jeu !** 😃',
@@ -72,7 +82,7 @@ function processSendMessage(
             image: {
                 url: 'https://steamcdn-a.akamaihd.net/steam/apps/289070/capsule_184x69.jpg',
             },
-            fields: [],
+            fields: fields,
         },
     };
 
@@ -155,6 +165,8 @@ module.exports = {
                     notifyPrivate,
                     steamPartyId,
                     logger,
+                    request.body.Value1,
+                    request.body.Value3,
                 );
             },
 
@@ -197,6 +209,8 @@ module.exports = {
                     notifyPrivate,
                     steamPartyId,
                     logger,
+                    request.body.gameName,
+                    request.body.turn,
                 );
             },
         };

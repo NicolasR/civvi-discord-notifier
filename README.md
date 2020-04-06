@@ -35,6 +35,8 @@ Format JSON attendu:
 | loginToken         | Token d'authentification du Bot | &#x2611;
 | channelId          | Id du channel Discord où sera postée la notification  | &#x2611; |
 | steamPartyId | Id de la partie | &#x2612; |
+| gameName | Nom de la partie | &#x2612; |
+| turn | Numéro du tour | &#x2612; |
 
 ### Format POST /raw
 
