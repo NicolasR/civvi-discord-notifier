@@ -32,6 +32,8 @@ Format JSON attendu:
     "loginToken": "Login_token_discord",
     "channelId": "Id_Channel_discord",
     "steamPartyId": "Id_de_la_partie",
+    "gameName": "Nom_de_la_partie",
+    "turn": "Numero_du_tour"
 }
 ```
 
