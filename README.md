@@ -13,9 +13,6 @@ Le fichier .env contient les variables de configuration utilisées.
 
 Le mapping entre **Nom d'utilisateur** et **Id Discord** doit être écrit dans le fichier **mapping-users-discord.json**
 
-Le mapping entre **Nom d'utilisateur** et **Id Steam** doit être écrit dans le fichier **mapping-users-steam.json**
-
-
 ## Requêtes
 
 Deux types de requêtes possibles:

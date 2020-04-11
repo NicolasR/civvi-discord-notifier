@@ -9,7 +9,6 @@ const middleware = require('./middleware');
 const app = express();
 var bodyParser = require('body-parser');
 const mappingUsersDiscord = require('./data/mapping-users-discord.json');
-const mappingUsersSteam = require('./data/mapping-users-steam.json');
 const routes = require('./routes');
 
 /*
@@ -25,7 +24,6 @@ function logger(message) {
 // Initialisation du logger
 const middlewareServer = middleware.middleware(
     mappingUsersDiscord,
-    mappingUsersSteam,
     logger,
 );
 

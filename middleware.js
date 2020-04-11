@@ -34,7 +34,6 @@ function processSendMessage(
     serverUrl,
     response,
     userId,
-    userSteamId,
     channelId,
     loginToken,
     notifyPrivate,
@@ -44,7 +43,6 @@ function processSendMessage(
     turnCount,
 ) {
     logger(`Found associated Discord User Id: ${userId}`);
-    logger(`Found associated Steam User Id: ${userSteamId}`);
     logger(`Private message enabled: ${notifyPrivate}`);
 
     // Construction du message à envoyer
@@ -52,9 +50,9 @@ function processSendMessage(
     const message = `C'est à toi de jouer <@${userId}> <${emoji}> !`;
 
     let description = message;
-    if (steamPartyId && userSteamId) {
+    if (steamPartyId) {
         const gameUrl = encodeURIComponent(
-            `steam://run/289070//?_sessionid=${userSteamId};_context=${steamPartyId}`,
+            `steam://run/289070//?_context=${steamPartyId}`,
         );
         const fullUrl = `${serverUrl}/redirect?dest=${gameUrl}`;
         description += `\nTu peux rejoindre la partie en cliquant **[ICI](${fullUrl})**`;
@@ -119,9 +117,8 @@ function processSendMessage(
 }
 
 module.exports = {
-    middleware: function(mappingUsersDiscord, mappingUsersSteam, logger) {
+    middleware: function(mappingUsersDiscord, logger) {
         const _mappingUsersDiscord = mappingUsersDiscord;
-        const _mappingUsersSteam = mappingUsersSteam;
         const _logger = logger;
 
         return {
@@ -153,13 +150,11 @@ module.exports = {
                 const userName = request.body.Value2;
                 _logger(`Reading username: ${userName}`);
                 const userId = getUserIdFromUsername(userName, _mappingUsersDiscord);
-                const userSteamId = getUserIdFromUsername(userName, _mappingUsersSteam);
 
                 processSendMessage(
                     getServerUrl(request),
                     response,
                     userId,
-                    userSteamId,
                     channelId,
                     loginToken,
                     notifyPrivate,
@@ -191,7 +186,6 @@ module.exports = {
                 const userName = request.body.username;
                 _logger(`Reading username: ${userName}`);
                 const userId = getUserIdFromUsername(userName, _mappingUsersDiscord);
-                const userSteamId = getUserIdFromUsername(userName, _mappingUsersSteam);
 
                 const channelId = request.body.channelId;
                 const loginToken = request.body.loginToken;
@@ -203,7 +197,6 @@ module.exports = {
                     getServerUrl(request),
                     response,
                     userId,
-                    userSteamId,
                     channelId,
                     loginToken,
                     notifyPrivate,
